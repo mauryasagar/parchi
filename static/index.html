@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parchi</title>
+<meta name="description" content="Turn messy WhatsApp order messages into a clean order sheet, totals and a prep list. Runs on your own laptop.">
+<style>
+:root {
+  --bg: #F6F7F9;
+  --surface: #FFFFFF;
+  --border: #E4E7EC;
+  --border-strong: #D0D5DD;
+  --text: #101828;
+  --muted: #596273;
+  --accent: #0B7A55;
+  --accent-hover: #096647;
+  --accent-soft: #E7F5EE;
+  --ok-text: #067647;
+  --warn-bg: #FFFAEB;
+  --warn-border: #FEDF89;
+  --warn-text: #93370D;
+  --err: #B42318;
+  --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --head: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+  --shadow-lg: 0 4px 8px -2px rgba(16, 24, 40, .08), 0 12px 24px -8px rgba(16, 24, 40, .12);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 var(--ui); -webkit-font-smoothing: antialiased; }
+.wrap { width: min(1180px, 100% - 40px); margin-inline: auto; }
+.muted { color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .72rem 1.2rem; border: 1px solid transparent; border-radius: 8px;
+  font: 600 .98rem/1.2 var(--ui); text-decoration: none; cursor: pointer;
+}
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ghost { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn.ghost:hover { background: #F9FAFB; }
+.btn.small { padding: .45rem .8rem; font-size: .9rem; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn.busy[disabled] { cursor: progress; }
+
+/* ------------------------------------------------------- landing --- */
+.site { background: var(--surface); border-bottom: 1px solid var(--border); }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+.brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--text); text-decoration: none; font: 700 1.3rem/1 var(--head); letter-spacing: -.01em; }
+.nav-links { display: flex; align-items: center; gap: 1.4rem; }
+.nav-links a:not(.btn) { color: var(--muted); font-weight: 600; text-decoration: none; }
+.nav-links a:not(.btn):hover { color: var(--text); }
+
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: center; padding: 44px 0 72px; }
+h1 { margin: 0 0 1.1rem; font: 700 clamp(2.4rem, 4.6vw, 3.6rem)/1.06 var(--head); letter-spacing: -.025em; text-wrap: balance; }
+.lede { margin: 0 0 1.8rem; max-width: 32rem; font-size: 1.15rem; color: var(--muted); }
+.cta { display: flex; flex-wrap: wrap; gap: .8rem; }
+.proof { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: .55rem; font-size: .98rem; }
+.proof li { display: flex; align-items: flex-start; gap: .6rem; }
+.proof svg { flex: none; margin-top: .22rem; }
+
+.stage { padding: 26px; border-radius: 18px; background: var(--accent-soft); }
+.preview { padding: 20px 20px 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-lg); }
+.pv-title { margin: 0 0 .9rem; font-weight: 650; font-size: .95rem; }
+.pv-item { padding-bottom: 1rem; }
+.pv-item + .pv-item { padding-top: 1rem; border-top: 1px solid var(--border); }
+.pv-msg { display: inline-block; max-width: 100%; margin: 0 0 .6rem; padding: .45rem .75rem; border-radius: 4px 12px 12px 12px; background: #F2F4F7; font-size: .92rem; color: #344054; }
+.pv-row { display: grid; grid-template-columns: 7.4rem minmax(0, 1fr) auto auto 4.2rem; align-items: center; gap: .35rem .9rem; font-size: .93rem; }
+.pv-row b { font-weight: 650; }
+.pv-row .pill { justify-self: end; }
+.pv-row .nm { font-weight: 400; color: var(--muted); }
+.pv-total { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.pill { display: inline-block; padding: .12rem .6rem; border-radius: 999px; border: 1px solid; font-size: .82rem; font-weight: 600; line-height: 1.5; white-space: nowrap; }
+.pill.ok { background: #ECFDF3; border-color: #ABEFC6; color: var(--ok-text); }
+.pill.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+
+/* ----------------------------------------------------------- app --- */
+.app { padding: 64px 0 24px; }
+.app h2 { margin: 0 0 .4rem; font: 700 clamp(1.8rem, 3vw, 2.3rem)/1.15 var(--head); letter-spacing: -.02em; }
+.app .intro { margin: 0 0 1.8rem; max-width: 44rem; color: var(--muted); }
+.app-grid { display: grid; grid-template-columns: minmax(300px, 370px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+
+.input { position: sticky; top: 20px; padding: 20px; }
+.input label.lbl { display: block; margin-bottom: .45rem; font-weight: 650; }
+textarea {
+  display: block; width: 100%; min-height: 19rem; resize: vertical; padding: .8rem .9rem;
+  border: 1px solid var(--border-strong); border-radius: 8px; background: #fff;
+  font: .98rem/1.6 var(--ui); color: var(--text);
+}
+textarea::placeholder { color: #98A2B3; }
+textarea:focus-visible, select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(11, 122, 85, .18); }
+.row { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: .9rem; }
+.hint { margin: .7rem 0 0; font-size: .85rem; color: var(--muted); }
+.field { margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+.field label { display: block; margin-bottom: .35rem; font-weight: 650; font-size: .93rem; }
+select { padding: .45rem .6rem; border: 1px solid var(--border-strong); border-radius: 8px; background: #fff; color: var(--text); font: .95rem var(--ui); }
+details.prices { margin-top: 1.1rem; font-size: .9rem; }
+details.prices summary { cursor: pointer; font-weight: 650; }
+details.prices table { width: 100%; margin-top: .6rem; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+details.prices th, details.prices td { padding: .25rem .3rem; text-align: left; border-bottom: 1px solid var(--border); }
+details.prices th { color: var(--muted); font-weight: 600; }
+details.prices td:last-child, details.prices th:last-child { text-align: right; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
+.stat { padding: 14px 16px; }
+.stat .k { font-size: .85rem; color: var(--muted); }
+.stat .v { margin-top: .15rem; font: 700 1.55rem/1.2 var(--head); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.stat.warn .v { color: var(--warn-text); }
+
+.results { overflow: hidden; }
+.statusbar { padding: 14px 18px 12px; border-bottom: 1px solid var(--border); }
+.status-text { font-size: .95rem; font-weight: 600; }
+.status-text.err { color: var(--err); }
+.track { height: 4px; margin-top: .6rem; border-radius: 2px; background: #EAECF0; overflow: hidden; }
+.track i { display: block; width: 0; height: 100%; background: var(--accent); transition: width .3s; }
+.tabs { display: flex; align-items: center; gap: .3rem; padding: 0 12px 0 10px; border-bottom: 1px solid var(--border); }
+.btn { white-space: nowrap; }
+.tab { position: relative; padding: .85rem .8rem; white-space: nowrap; border: 0; background: none; color: var(--muted); font: 600 .95rem var(--ui); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--text); }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: .5rem; right: .5rem; bottom: -1px; height: 2px; background: var(--accent); }
+.count { margin-left: .3rem; padding: .02rem .45rem; border-radius: 999px; background: #F2F4F7; font-size: .78rem; font-weight: 600; }
+.tabs .grow { flex: 1; }
+
+.empty { margin: 0; padding: 3.2rem 1.5rem; text-align: center; color: var(--muted); }
+
+.thead, .order-row {
+  display: grid; align-items: start; column-gap: 14px;
+  grid-template-columns: 2rem minmax(0, 1.05fr) minmax(0, 2fr) minmax(0, 1.1fr) minmax(0, .9fr) minmax(0, 1.25fr);
+  padding: .8rem 18px;
+}
+.thead { padding-block: .6rem; background: #F9FAFB; border-bottom: 1px solid var(--border); font-size: .82rem; font-weight: 600; color: var(--muted); }
+.thead .r, .c-total { text-align: right; }
+.order { border-bottom: 1px solid var(--border); }
+.order:last-child { border-bottom: 0; }
+.order > summary { list-style: none; cursor: pointer; }
+.order > summary::-webkit-details-marker { display: none; }
+.order > summary:hover { background: #FBFCFD; }
+.order[open] > summary { background: #F9FAFB; }
+.c-num { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; padding-top: .1rem; }
+.c-cust { font-weight: 650; overflow-wrap: anywhere; }
+.c-cust .muted { font-weight: 400; }
+.it { line-height: 1.45; }
+.it b { font-weight: 650; font-variant-numeric: tabular-nums; }
+.it b.q-missing { color: var(--warn-text); }
+.note { margin-top: .2rem; font-size: .85rem; color: var(--muted); }
+.c-total { font-variant-numeric: tabular-nums; font-weight: 600; }
+.c-total small { display: block; font-weight: 400; color: var(--muted); }
+.reasons { margin: .4rem 0 0; padding: 0; list-style: none; font-size: .82rem; line-height: 1.4; color: var(--warn-text); }
+.reasons li + li { margin-top: .15rem; }
+.order-more { padding: .2rem 18px 1rem calc(18px + 2rem + 14px); font-size: .9rem; color: var(--muted); }
+.order-more q { color: var(--text); quotes: none; }
+.order.reading { padding: .8rem 18px; color: var(--muted); font-size: .92rem; }
+.order.reading span { color: var(--text); }
+
+.panel-pad { padding: 20px; }
+.prep-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; margin-bottom: 1rem; }
+.prep-head p { margin: 0; max-width: 34rem; font-size: .92rem; color: var(--muted); }
+.days { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.day { padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; }
+.day h3 { margin: 0 0 .5rem; font: 650 .98rem/1.3 var(--head); }
+.day ul { list-style: none; margin: 0; padding: 0; }
+.day li { display: flex; gap: .5rem; padding: .3rem 0; border-top: 1px solid #F2F4F7; font-size: .95rem; }
+.day li:first-child { border-top: 0; }
+.day li b { min-width: 4.2rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.leftout { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--warn-border); border-radius: 10px; background: var(--warn-bg); color: var(--warn-text); font-size: .9rem; }
+.leftout h3 { margin: 0 0 .4rem; font: 650 .95rem var(--ui); }
+.leftout ul { margin: 0; padding-left: 1.1rem; }
+.leftout li + li { margin-top: .25rem; }
+
+.foot { padding: 40px 0 44px; color: var(--muted); font-size: .9rem; }
+.foot p { max-width: 46rem; margin: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pulse { 50% { opacity: .4; } }
+  .order.reading span { animation: pulse 1.3s ease-in-out infinite; }
+}
+
+@media (max-width: 960px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; padding: 32px 0 52px; }
+  .app-grid { grid-template-columns: minmax(0, 1fr); }
+  .input { position: static; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .nav-links a:not(.btn) { display: none; }
+  .thead { display: none; }
+  .order-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cust status" "items items" "why why" "day total"; row-gap: .4rem; }
+  .c-num { display: none; }
+  .c-cust { grid-area: cust; }
+  .c-status { display: contents; }
+  .c-status .pill { grid-area: status; justify-self: end; }
+  .c-status .reasons { grid-area: why; margin: 0; }
+  .c-items { grid-area: items; }
+  .c-day { grid-area: day; color: var(--muted); }
+  .c-total { grid-area: total; }
+  .order-more { padding-left: 18px; }
+  .stage { padding: 14px; }
+  .pv-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .pv-row > :nth-child(5) { order: 1; }
+  .pv-row > :nth-child(2) { order: 2; grid-column: 1 / -1; }
+  .pv-row > :nth-child(3) { order: 3; }
+  .pv-row > :nth-child(4) { order: 4; text-align: right; }
+}
+
+/* ------------------------------------------- Theme: Mithai --- */
+:root{--bg:#FFF6E5;--surface:#fff;--border:#1F1209;--border-strong:#1F1209;--text:#1F1209;--muted:#664630;--accent:#FF4F9A;--accent-hover:#F03487;--accent-soft:#FFC9E0;--ok-text:#1F1209;--warn-bg:#FFD84D;--warn-border:#1F1209;--warn-text:#1F1209;--shadow:4px 4px 0 #1F1209;--shadow-lg:none}
+.site{background-color:#FFA630;background-image:radial-gradient(rgba(0,0,0,.13) 1.3px,transparent 1.3px);background-size:22px 22px;border-bottom:2px solid #1F1209}
+.brand,.nav-links a:not(.btn){color:#1F1209}
+h1{color:#1F1209;font-weight:900;letter-spacing:-.035em}
+.lede,.proof{color:#1F1209} .lede{opacity:.92}
+.proof svg circle{fill:#fff}.proof svg path{stroke:#1F1209}
+.brand svg path:first-child{fill:#fff}.brand svg path{stroke:#1F1209}
+.btn{border:2px solid #1F1209;border-radius:10px;box-shadow:3px 3px 0 #1F1209;font-weight:800;transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #1F1209}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1F1209}
+.btn.primary{background:#FF4F9A;color:#1F1209}.btn.primary:hover{background:#F03487}
+.btn.ghost{background:#fff;color:#1F1209}
+.stage{position:relative;background:#fff;border:2px solid #1F1209;border-radius:18px;box-shadow:8px 8px 0 #1F1209;padding:20px}
+.stage::after{content:"Runs on\A your laptop";white-space:pre;position:absolute;top:-28px;right:-22px;width:104px;height:104px;border-radius:50%;background:#BFE8A8;border:2px solid #1F1209;display:grid;place-items:center;text-align:center;font:800 .8rem/1.15 var(--ui);color:#1F1209;transform:rotate(12deg);box-shadow:3px 3px 0 #1F1209}
+.preview{border:2px solid #1F1209;box-shadow:none;border-radius:12px}
+.pv-msg{background:#fff;border:2px solid #1F1209;border-radius:4px 12px 12px 12px}
+.pill{border:2px solid #1F1209;color:#1F1209;font-weight:800}.pill.ok{background:#BFE8A8}.pill.warn{background:#FFD84D}
+.card{border:2px solid #1F1209;border-radius:14px;box-shadow:4px 4px 0 #1F1209}
+.stat:nth-child(1){background:#fff}.stat:nth-child(2){background:#BFE8A8}.stat:nth-child(3){background:#FFD84D}.stat:nth-child(4){background:#FFC9E0}
+.stat .v{font-weight:900;white-space:nowrap;font-size:1.4rem}.stat.warn .v{color:#1F1209}.stat .k{color:#1F1209;opacity:.8}
+.statusbar{border-bottom:2px solid #1F1209}
+.track{background:#fff;border:2px solid #1F1209;height:10px;border-radius:6px}.track i{background:#FF4F9A}
+.tabs{gap:.4rem;padding:10px 14px;border-bottom:2px solid #1F1209}
+.tab{border:2px solid transparent;border-radius:8px;padding:.4rem .85rem;color:#1F1209;font-weight:800}
+.tab[aria-selected="true"]{background:#1F1209;color:#fff}.tab[aria-selected="true"]::after{display:none}
+.count{background:#FF4F9A;color:#1F1209;border:2px solid #1F1209}
+.thead{background:#1F1209;color:#fff;border-bottom:0}.thead span{color:#fff}
+.order{border-bottom:1px solid #1F1209}.order>summary:hover,.order[open]>summary{background:rgba(0,0,0,.045)}
+textarea,select{border:2px solid #1F1209;border-radius:10px;background:#fff}
+textarea:focus-visible,select:focus-visible{box-shadow:3px 3px 0 #FF4F9A}
+.day{border:2px solid #1F1209;border-radius:12px;background:#fff;padding:0 0 10px;overflow:hidden}
+.day h3{background:#1F1209;color:#fff;margin:0 0 .4rem;padding:.55rem 16px}.day ul{padding:0 16px}
+.leftout{border:2px solid #1F1209;background:#FFD84D;color:#1F1209}
+.app h2{font-weight:900;letter-spacing:-.03em}
+
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+@media (max-width: 760px) {
+  .stage::after { top: -22px; right: -6px; width: 82px; height: 82px; font-size: .68rem; }
+  .stage { box-shadow: 5px 5px 0 var(--text); padding: 14px; }
+  .card { box-shadow: 3px 3px 0 var(--text); }
+  .stat .v { font-size: clamp(1.1rem, 4.6vw, 1.4rem); }
+  .tabs { padding: 8px 10px; gap: .15rem; }
+  .tab { padding: .35rem .55rem; font-size: .9rem; }
+  .tabs .btn { padding: .35rem .6rem; font-size: .82rem; box-shadow: 2px 2px 0 var(--text); }
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="#top" id="top">
+        <svg width="24" height="28" viewBox="0 0 26 30" aria-hidden="true"><path d="M2 1h22v28l-3-2.2-3 2.2-3-2.2-3 2.2-3-2.2-3 2.2-3-2.2z" fill="#E7F5EE" stroke="#0B7A55" stroke-width="2" stroke-linejoin="round"/><path d="M7 9h12M7 14h12M7 19h7" stroke="#0B7A55" stroke-width="2" stroke-linecap="round"/></svg>
+        Parchi
+      </a>
+      <div class="nav-links">
+        <a href="https://github.com/mauryasagar/parchi">GitHub</a>
+        <a class="btn primary small" href="#app">Open the app</a>
+      </div>
+    </nav>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Turn messy WhatsApp orders into a clean order sheet.</h1>
+        <p class="lede">Parchi reads order messages in Hinglish or English, works out the bill, and lists what to make tomorrow. It runs on your own laptop, so your customers' names and numbers never leave it.</p>
+        <div class="cta">
+          <button class="btn primary" id="hero-try" type="button">Try it with sample orders</button>
+          <a class="btn ghost" href="https://github.com/mauryasagar/parchi">View the source</a>
+        </div>
+        <ul class="proof">
+          <li><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#0B7A55"/><path d="M5.5 10.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Totals are plain code, so the AI can't make up a number</li>
+          <li><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#0B7A55"/><path d="M5.5 10.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unclear orders are flagged for you to check</li>
+          <li><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#0B7A55"/><path d="M5.5 10.4l3 3 6-6.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Works offline, with no cost per message</li>
+        </ul>
+      </div>
+
+      <div class="stage">
+        <div class="preview" role="img" aria-label="Example: three chat messages turned into order rows. Sharma ji, 5 kg laddoo, Rs 3,000. 1 kg kaju katli and 500 g barfi, Rs 1,250. And 'cake chahiye', flagged because the quantity is missing.">
+          <p class="pv-title" aria-hidden="true">Today's orders</p>
+          <div class="pv-item" aria-hidden="true">
+            <p class="pv-msg">bhaiya kal subah 5 kg laddoo chahiye, Sharma ji ke ghar, 10 baje tak</p>
+            <div class="pv-row"><b>Sharma ji</b><span>5 kg laddoo</span><span class="muted">kal subah</span><span class="pv-total">Rs 3,000</span><span class="pill ok">Ready</span></div>
+          </div>
+          <div class="pv-item" aria-hidden="true">
+            <p class="pv-msg">didi 1 kilo kaju katli aur 500 gm barfi, parso shaam tak</p>
+            <div class="pv-row"><span class="nm">Name not given</span><span>1 kg kaju katli, 500 g barfi</span><span class="muted">parso shaam</span><span class="pv-total">Rs 1,250</span><span class="pill ok">Ready</span></div>
+          </div>
+          <div class="pv-item" aria-hidden="true">
+            <p class="pv-msg">cake chahiye</p>
+            <div class="pv-row"><span class="nm">Name not given</span><span>cake, quantity missing</span><span class="muted">Not clear</span><span class="pv-total muted">–</span><span class="pill warn">Check</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="app" id="app">
+    <div class="wrap">
+      <h2>Read today's orders</h2>
+      <p class="intro">The model only reads the messages. Prices, totals and the prep list are worked out by plain code. Anything unclear is marked Check for you to look at.</p>
+      <noscript><p>Parchi needs JavaScript turned on to show the orders.</p></noscript>
+
+      <div class="app-grid">
+        <div class="card input">
+          <label class="lbl" for="orders">Orders, one message per line</label>
+          <textarea id="orders" spellcheck="false" placeholder="bhaiya kal subah 5 kg laddoo chahiye&#10;Priya here, 2 dozen cupcakes for saturday pls"></textarea>
+          <div class="row">
+            <button class="btn primary" id="read" type="button">Read orders</button>
+            <button class="btn ghost" id="sample" type="button">Use sample orders</button>
+          </div>
+          <p class="hint">On a laptop without a GPU each message takes about 15 to 20 seconds. Results are saved, so reading the same message again is instant.</p>
+
+          <div class="field">
+            <label for="model">Model</label>
+            <select id="model"><option>gemma4:e4b</option></select>
+            <p class="hint">E4B is the careful one. E2B is about twice as fast, but in my tests it sometimes invented items.</p>
+          </div>
+
+          <details class="prices">
+            <summary>Price list in use</summary>
+            <table><thead><tr><th>Item</th><th>Per</th><th>Rs</th></tr></thead><tbody id="price-rows"></tbody></table>
+            <p class="hint">These prices are made up. Change them in prices.csv and reload this page.</p>
+          </details>
+        </div>
+
+        <div>
+          <div class="stats" aria-label="Summary">
+            <div class="card stat"><div class="k">Orders read</div><div class="v" id="st-orders">–</div></div>
+            <div class="card stat"><div class="k">Ready</div><div class="v" id="st-ready">–</div></div>
+            <div class="card stat warn"><div class="k">Need a check</div><div class="v" id="st-check">–</div></div>
+            <div class="card stat"><div class="k">Total of priced items</div><div class="v" id="st-total">–</div></div>
+          </div>
+
+          <div class="card results">
+            <div class="statusbar" aria-live="polite">
+              <div class="status-text" id="status-text">Nothing read yet.</div>
+              <div class="track" id="track" hidden><i id="fill"></i></div>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="Results">
+              <button class="tab" role="tab" id="tab-orders" aria-controls="panel-orders" aria-selected="true" type="button">Orders<span class="count" id="count-orders">0</span></button>
+              <button class="tab" role="tab" id="tab-prep" aria-controls="panel-prep" aria-selected="false" tabindex="-1" type="button">Prep list</button>
+              <span class="grow"></span>
+              <button class="btn ghost small" id="csv" type="button" disabled>Download CSV</button>
+            </div>
+
+            <div role="tabpanel" id="panel-orders" aria-labelledby="tab-orders">
+              <p class="empty" id="empty-orders">No orders yet. Paste your messages on the left, then press Read orders.</p>
+              <div id="table" hidden>
+                <div class="thead" aria-hidden="true"><span>#</span><span>Customer</span><span>Items</span><span>Day</span><span class="r">Total</span><span>Status</span></div>
+                <div id="rows"></div>
+                <p class="hint" style="padding:0 18px 14px">Select a row to see the original message.</p>
+              </div>
+            </div>
+
+            <div role="tabpanel" id="panel-prep" aria-labelledby="tab-prep" hidden>
+              <p class="empty" id="empty-prep">The prep list appears after you read your orders.</p>
+              <div class="panel-pad" id="prep-body" hidden>
+                <div class="prep-head">
+                  <p>What to make, added up from every order and grouped by delivery day. Orders with no quantity or a date range are left out and listed at the bottom.</p>
+                  <button class="btn ghost small" id="copy" type="button">Copy for WhatsApp</button>
+                </div>
+                <div class="days" id="days"></div>
+                <div class="leftout" id="leftout" hidden></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Parchi runs Gemma on your own laptop through Ollama, so customer names and numbers never leave it. The sample orders and prices are made up. Built for the DEV Hacktoberfest Side Hustle challenge. Open source under the MIT license.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const state = { slips: [], running: false, prep: null };
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+  const rs = (n) => {
+    const d = Number.isInteger(Number(n)) ? 0 : 2;
+    return "Rs " + Number(n).toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
+  };
+
+  async function api(path, body) {
+    const res = await fetch(path, body ? {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    } : undefined);
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* not JSON */ }
+    if (!res.ok) {
+      const err = new Error((data && data.message) || "Request failed");
+      err.code = (data && data.error) || "request_failed";
+      throw err;
+    }
+    return data;
+  }
+
+  /* ---- tabs ---- */
+  function showTab(name) {
+    for (const t of ["orders", "prep"]) {
+      const on = t === name;
+      $("tab-" + t).setAttribute("aria-selected", on ? "true" : "false");
+      $("tab-" + t).tabIndex = on ? 0 : -1;
+      $("panel-" + t).hidden = !on;
+    }
+  }
+  $("tab-orders").addEventListener("click", () => showTab("orders"));
+  $("tab-prep").addEventListener("click", () => showTab("prep"));
+  document.querySelector(".tabs").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const next = $("tab-orders").getAttribute("aria-selected") === "true" ? "prep" : "orders";
+    showTab(next);
+    $("tab-" + next).focus();
+  });
+
+  /* ---- rows ---- */
+  function rowHTML(s, n) {
+    const flagged = s.problems.length > 0;
+    const items = s.items.length
+      ? s.items.map((i) => `<div class="it"><b${i.qty == null ? ' class="q-missing"' : ""}>${esc(i.qty_text)}</b> ${esc(i.name || "unnamed item")}</div>`).join("")
+      : '<div class="it muted">No items found</div>';
+    const priced = s.items.filter((i) => i.line_total != null).length;
+    let total = '<span class="muted">–</span>';
+    if (priced > 0) {
+      total = esc(rs(s.total)) + (priced < s.items.length ? "<small>partial</small>" : "");
+    }
+    const status = flagged
+      ? `<span class="pill warn">Check</span><ul class="reasons">${s.problems.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`
+      : '<span class="pill ok">Ready</span>';
+    return `
+      <details class="order">
+        <summary class="order-row">
+          <span class="c-num">${n}</span>
+          <span class="c-cust">${s.customer ? esc(s.customer) : '<span class="muted">Name not given</span>'}</span>
+          <span class="c-items">${items}${s.notes ? `<div class="note">${esc(s.notes)}</div>` : ""}</span>
+          <span class="c-day">${s.day ? esc(s.day) : '<span class="muted">Not clear</span>'}</span>
+          <span class="c-total">${total}</span>
+          <span class="c-status">${status}</span>
+        </summary>
+        <div class="order-more">Original message: <q>${esc(s.msg)}</q></div>
+      </details>`;
+  }
+
+  function readingHTML(msg, n) {
+    return `<div class="order reading">Reading message ${n}: <span>${esc(msg)}</span></div>`;
+  }
+
+  function htmlToEl(html) {
+    const t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild;
+  }
+
+  function setStatus(text, pct, isError) {
+    const el = $("status-text");
+    el.textContent = text;
+    el.classList.toggle("err", !!isError);
+    const track = $("track");
+    if (pct == null) { track.hidden = true; return; }
+    track.hidden = false;
+    $("fill").style.width = pct + "%";
+  }
+
+  function setStats(p) {
+    if (!p) {
+      for (const id of ["orders", "ready", "check", "total"]) $("st-" + id).textContent = "–";
+      return;
+    }
+    $("st-orders").textContent = p.orders;
+    $("st-ready").textContent = p.orders - p.need_check;
+    $("st-check").textContent = p.need_check;
+    $("st-total").textContent = rs(p.grand_total);
+  }
+
+  function renderPrep(p) {
+    $("days").innerHTML = p.days.length
+      ? p.days.map((d) => `<section class="day"><h3>${esc(d.day)}</h3><ul>${d.items.map((i) => `<li><b>${esc(i.qty)}</b><span>${esc(i.name)}</span></li>`).join("")}</ul></section>`).join("")
+      : '<p class="muted">Nothing to prepare yet.</p>';
+    const lo = $("leftout");
+    if (p.left_out.length) {
+      lo.hidden = false;
+      lo.innerHTML = `<h3>Left out of the list</h3><ul>${p.left_out.map((x) => `<li>${esc(x.why)}: ${esc(x.msg)}</li>`).join("")}</ul>`;
+    } else {
+      lo.hidden = true;
+    }
+    $("empty-prep").hidden = true;
+    $("prep-body").hidden = false;
+  }
+
+  async function readOrders() {
+    if (state.running) return;
+    const lines = $("orders").value.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) {
+      setStatus("Paste at least one order first, or press Use sample orders.", null, true);
+      $("orders").focus();
+      return;
+    }
+    const model = $("model").value;
+    state.running = true;
+    state.slips = [];
+    state.prep = null;
+    $("rows").innerHTML = "";
+    $("empty-orders").hidden = true;
+    $("table").hidden = false;
+    $("empty-prep").hidden = false;
+    $("prep-body").hidden = true;
+    $("csv").disabled = true;
+    $("count-orders").textContent = "0";
+    setStats(null);
+    showTab("orders");
+    $("read").disabled = true;
+    $("read").classList.add("busy");
+    $("read").textContent = "Reading…";
+
+    let failure = null;
+    for (let i = 0; i < lines.length; i++) {
+      const n = i + 1;
+      setStatus(`Reading message ${n} of ${lines.length}`, Math.round((i / lines.length) * 100));
+      const ph = htmlToEl(readingHTML(lines[i], n));
+      $("rows").appendChild(ph);
+      try {
+        const slip = await api("/api/parse", { message: lines[i], model });
+        state.slips.push(slip);
+        ph.replaceWith(htmlToEl(rowHTML(slip, n)));
+        $("count-orders").textContent = String(state.slips.length);
+      } catch (e) {
+        ph.remove();
+        failure = e;
+        break;
+      }
+    }
+
+    if (state.slips.length) {
+      try {
+        state.prep = await api("/api/prep", { slips: state.slips });
+        setStats(state.prep);
+        renderPrep(state.prep);
+      } catch (e) { /* the orders are still shown */ }
+      $("csv").disabled = false;
+    } else {
+      $("table").hidden = true;
+      $("empty-orders").hidden = false;
+    }
+
+    if (failure) {
+      setStatus(
+        failure.code === "model_unreachable"
+          ? "Couldn't reach Ollama. Open the Ollama app, then press Read orders again."
+          : failure.message,
+        null, true
+      );
+    } else {
+      const flagged = state.slips.filter((s) => s.problems.length).length;
+      setStatus(
+        `Read ${state.slips.length} ${state.slips.length === 1 ? "order" : "orders"}. ` +
+        (flagged ? `${flagged} ${flagged === 1 ? "needs" : "need"} a check. ` : "Nothing needs a check. ") +
+        "Open the Prep list tab to see what to make.",
+        100
+      );
+    }
+    state.running = false;
+    $("read").disabled = false;
+    $("read").classList.remove("busy");
+    $("read").textContent = "Read orders";
+  }
+
+  /* ---- CSV and copy ---- */
+  function csvCell(v) {
+    const s = String(v == null ? "" : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function downloadCsv() {
+    const rows = [["customer", "items", "delivery_day", "notes", "total_rs", "check"]];
+    for (const s of state.slips) {
+      rows.push([
+        s.customer || "",
+        s.items.map((i) => `${i.qty_text} ${i.name}`.trim()).join("; "),
+        s.day || "",
+        s.notes || "",
+        s.total,
+        s.problems.join(" | "),
+      ]);
+    }
+    const text = "﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "orders.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function copyPrep() {
+    if (!state.prep) return;
+    const text = state.prep.days
+      .map((d) => d.day + "\n" + d.items.map((i) => `${i.qty} ${i.name}`).join("\n"))
+      .join("\n\n");
+    const btn = $("copy");
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "Copied";
+    } catch (e) {
+      btn.textContent = "Could not copy";
+    }
+    setTimeout(() => { btn.textContent = "Copy for WhatsApp"; }, 2000);
+  }
+
+  async function loadSample() {
+    try {
+      const d = await api("/api/sample");
+      if (d.text.trim()) {
+        $("orders").value = d.text.trim();
+      } else {
+        setStatus("No orders.txt found next to app.py, so there are no sample orders to load.", null, true);
+      }
+    } catch (e) {
+      setStatus("Could not load the sample orders.", null, true);
+    }
+  }
+
+  $("read").addEventListener("click", readOrders);
+  $("sample").addEventListener("click", loadSample);
+  $("csv").addEventListener("click", downloadCsv);
+  $("copy").addEventListener("click", copyPrep);
+  $("orders").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); readOrders(); }
+  });
+  $("hero-try").addEventListener("click", async () => {
+    await loadSample();
+    $("app").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+    $("orders").focus({ preventScroll: true });
+  });
+
+  api("/api/models").then((d) => {
+    $("model").innerHTML = d.models.map((m) => `<option value="${esc(m)}"${m === d.default ? " selected" : ""}>${esc(m)}</option>`).join("");
+  }).catch(() => { /* keep the default option */ });
+
+  api("/api/prices").then((d) => {
+    $("price-rows").innerHTML = d.prices.map((p) => `<tr><td>${esc(p.item)}</td><td>${esc(p.unit)}</td><td>${esc(p.price)}</td></tr>`).join("");
+  }).catch(() => { /* price list is optional to show */ });
+})();
+</script>
+</body>
+</html>
