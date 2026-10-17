@@ -1,4 +1,4 @@
-# Parchi
+# 🗐 Parchi
 
 Parchi turns messy WhatsApp order messages (often Hinglish) into a clean order sheet for small food sellers: home bakers, sweet shops, tiffin services. A "parchi" is the slip of paper an order gets written on.
 
