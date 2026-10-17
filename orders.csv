@@ -1,0 +1,16 @@
+﻿customer,items,delivery_day,notes,total_rs,check
+Sharma ji,laddoo 5 kg,kal,subah 10 baje tak,3000.0,
+Priya,cupcakes 2 dozen,saturday,no nuts,960.0,
+,kaju katli 1 kilo; barfi 500 gm,parso shaam tak,,1250.0,customer missing
+Rahul,tiffin 3,monday se friday,"roti sabzi dal, no onion",0,"tiffin unit unclear (got None, price is per day)"
+,chocolate cake 1 kg; birthday cake None,sunday,Happy Birthday Mohit likhna hai,900.0,birthday cake not in price list | customer missing
+,besan laddoo 2 kg,kal,,1300.0,customer missing
+Neha,samosa 12; jalebi 6,tomorrow evening,,240.0,
+,mithai ka dabba 1,diwali,,0,mithai ka dabba not in price list | customer missing
+Amit,tiffin 4,kal se,1 me sirf roti sabzi,0,"tiffin unit unclear (got None, price is per day)"
+Sunita ji,soan papdi 250 gm; rasgulla 1 kg,shukrawar,,512.5,
+,cake None,,,0,cake not in price list | customer missing | delivery day missing
+Pooja,gulab jamun 10; kachori 5,,aaj shaam 6 baje,250.0,delivery day missing
+,laddoo 3 kg; peda 1 kg,kal subah,thoda kam meetha,2350.0,customer missing
+Vikas,brownies 1 dozen,friday,half eggless,420.0,
+,barfi 1 dabba,,mere ghar,0,"barfi unit unclear (got dabba, price is per kg) | customer missing | delivery day missing"
