@@ -12,6 +12,7 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 
 ## Table of contents
 
+- [Screenshots](#screenshots)
 - [The problem](#the-problem)
 - [The solution](#the-solution)
 - [How it works](#how-it-works)
@@ -27,6 +28,24 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="assets/demo.gif" alt="Parchi demo: reading WhatsApp orders into an order sheet" width="90%">
+</p>
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/home.png" alt="Parchi home page"><br><sub>Home page</sub></td>
+    <td align="center"><img src="assets/orders.png" alt="Orders table with Check flags"><br><sub>Orders table with Check flags</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/prep-list.png" alt="Prep list by day"><br><sub>Prep list by day</sub></td>
+    <td align="center"><img src="assets/prices.png" alt="Editable price list"><br><sub>Editable price list</sub></td>
+  </tr>
+</table>
+
+---
 ## The problem
 
 A small food seller in India takes most of their orders on WhatsApp. The messages look like this:
