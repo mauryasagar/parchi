@@ -6,6 +6,8 @@ so the numbers can never be made up by the model.
 """
 import csv
 import json
+import math
+import os
 import re
 import urllib.request
 
@@ -114,6 +116,55 @@ def load_prices(path=PRICES_FILE):
 
 def price_rows(prices):
     return [{"item": k, "unit": u, "price": p} for k, (u, p) in prices.items()]
+
+
+PRICE_UNITS = ("kg", "dozen", "piece", "day")
+
+
+def save_prices(rows, path=PRICES_FILE):
+    """Check an edited price list and write it to prices.csv.
+
+    Returns (clean_rows, None) on success or (None, message) if something is wrong.
+    Raises OSError if the file cannot be written (for example, it is open in Excel).
+    """
+    if not isinstance(rows, list) or not rows:
+        return None, "The price list is empty. Add at least one item."
+    clean_rows, seen = [], set()
+    for n, r in enumerate(rows, 1):
+        if not isinstance(r, dict):
+            return None, f"Row {n} is not valid."
+        item = " ".join(str(r.get("item") or "").split()).lower()
+        unit = str(r.get("unit") or "").strip().lower()
+        price = to_float(r.get("price"))
+        if not item:
+            return None, f"Row {n}: the item name is empty."
+        if len(item) > 60:
+            return None, f"Row {n}: the item name is too long."
+        if unit not in PRICE_UNITS:
+            return None, f"{item}: choose a unit (kg, dozen, piece or day)."
+        if price is None or not math.isfinite(price) or price <= 0 or price > 1_000_000:
+            return None, f"{item}: the price must be a number above 0."
+        if item in seen:
+            return None, f"{item} is in the list twice. Keep one."
+        seen.add(item)
+        clean_rows.append({"item": item, "unit": unit, "price": price})
+
+    tmp = path + ".tmp"
+    try:
+        with open(tmp, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["item", "unit", "price"])
+            for r in clean_rows:
+                p = r["price"]
+                w.writerow([r["item"], r["unit"], int(p) if p.is_integer() else p])
+        os.replace(tmp, path)
+    except OSError:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
+    return clean_rows, None
 
 
 def find_price(name, prices):

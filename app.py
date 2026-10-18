@@ -12,6 +12,11 @@ import core
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 
 
+def body():
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else {}
+
+
 @app.get("/")
 def home():
     return send_from_directory("static", "index.html")
@@ -27,6 +32,20 @@ def api_prices():
     return jsonify(prices=core.price_rows(core.load_prices()))
 
 
+@app.post("/api/prices")
+def api_save_prices():
+    try:
+        rows, problem = core.save_prices(body().get("prices"))
+    except OSError:
+        return jsonify(
+            error="save_failed",
+            message="Could not write prices.csv. If it is open in Excel, close it and try again.",
+        ), 500
+    if problem:
+        return jsonify(error="invalid_prices", message=problem), 400
+    return jsonify(prices=rows)
+
+
 @app.get("/api/sample")
 def api_sample():
     try:
@@ -38,8 +57,8 @@ def api_sample():
 
 @app.post("/api/parse")
 def api_parse():
-    data = request.get_json(silent=True) or {}
-    msg = (data.get("message") or "").strip()
+    data = body()
+    msg = str(data.get("message") or "").strip()
     model = data.get("model") or core.DEFAULT_MODEL
     if not msg:
         return jsonify(error="empty_message", message="The message is empty."), 400
@@ -63,8 +82,7 @@ def api_parse():
 
 @app.post("/api/prep")
 def api_prep():
-    data = request.get_json(silent=True) or {}
-    return jsonify(core.make_prep(data.get("slips") or []))
+    return jsonify(core.make_prep(body().get("slips") or []))
 
 
 if __name__ == "__main__":
