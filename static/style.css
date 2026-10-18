@@ -66,22 +66,42 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--ink); text-decoration: none; font: 800 1.35rem/1 var(--head); letter-spacing: -.01em; }
 .brand svg { display: block; }
 
-/* sticky-note label, used for headings */
-.sticky {
+/* Sticky-note label. The middle sits flat and both ends curl up:
+   ::after is the paper (curved bottom edge, lighter ends), ::before is the shadow under each lifted end. */
+.sticky, .day h3 {
+  --note: var(--teal);
   position: relative; display: block; width: fit-content; max-width: 100%;
-  padding: .3rem 1.1rem .4rem; background: var(--teal); color: var(--teal-text);
+  padding: .3rem 1.2rem .6rem; color: var(--teal-text);
   font: 700 1.5rem/1.25 var(--hand); transform: rotate(-2deg);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, .1), 0 6px 10px rgba(40, 60, 60, .2);
 }
-.sticky::before {
-  content: ""; position: absolute; top: -9px; left: 50%; width: 54px; height: 17px; margin-left: -27px; transform: rotate(3deg);
-  background: rgba(222, 219, 200, .78); border: 1px solid rgba(120, 115, 95, .25);
+.sticky::after, .day h3::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background-color: var(--note);
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, .42) 0, rgba(255, 255, 255, 0) 15%, rgba(0, 0, 0, 0) 78%, rgba(255, 255, 255, .32) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(0, 0, 0, .07));
+  border-radius: 2px 2px 50% 50% / 2px 2px 8px 8px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .14);
 }
+.sticky::before, .day h3::before {
+  content: ""; position: absolute; left: 1%; right: 1%; bottom: -8px; height: 18px; z-index: -2;
+  background:
+    radial-gradient(ellipse 27% 60% at 8% 42%, rgba(20, 30, 30, .6), transparent),
+    radial-gradient(ellipse 27% 60% at 92% 42%, rgba(20, 30, 30, .6), transparent);
+  filter: blur(3px);
+}
+
+/* the shop name, on a sticky note */
+.brand.sticky { display: inline-flex; align-items: center; gap: .55rem; padding: .4rem 1.3rem .65rem 1rem; font: 700 1.75rem/1 var(--hand); letter-spacing: 0; transform: rotate(-1.5deg); }
+.brand.sticky svg { --logo-fill: #fff; color: var(--teal-text); }
 
 /* ------------------------------------------------------ landing --- */
 .site {
   position: relative; isolation: isolate; overflow-x: clip;
-  background: radial-gradient(circle at 64% 48%, rgba(124, 205, 198, .3), transparent 50%);
+  background:
+    linear-gradient(rgba(25, 25, 45, .2), transparent 18px),
+    radial-gradient(circle at 64% 48%, rgba(124, 205, 198, .3), transparent 50%);
+  border-top: 12px solid #4A4D63;
   border-bottom: 2px dashed rgba(38, 52, 58, .35);
 }
 .site::after {
@@ -89,12 +109,13 @@ a { color: var(--ink); text-underline-offset: 3px; }
   background: linear-gradient(to bottom, transparent, rgba(110, 96, 64, .09));
 }
 
-/* spiral binding along the top edge */
+/* Double-wire spiral binding. Each coil is two thin wires that stand above the page edge
+   and run down into a dark hole, like the reference notebook. */
 .spiral {
-  position: absolute; top: 0; left: 0; right: 0; height: 46px; z-index: 4; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='44' viewBox='0 0 26 44'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23C9D0D5'/%3E%3Cstop offset='.45' stop-color='%23FFFFFF'/%3E%3Cstop offset='1' stop-color='%238A939B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cellipse cx='13' cy='31' rx='6.5' ry='4' fill='%23B9AE95' opacity='.55'/%3E%3Cellipse cx='13' cy='31' rx='5' ry='3' fill='%2338404A' opacity='.6'/%3E%3Crect x='9.5' y='1.5' width='7' height='34' rx='3.5' fill='url(%23g)' stroke='%23555D66' stroke-width='1'/%3E%3C/svg%3E");
-  background-repeat: repeat-x; background-size: 26px 44px;
-  filter: drop-shadow(0 3px 2px rgba(40, 30, 10, .28));
+  position: absolute; top: -12px; left: 0; right: 0; height: 58px; z-index: 4; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='58' viewBox='0 0 28 58'%3E%3Cpath d='M8.2 15 C5.4 27 6.4 39 11.6 44.6' fill='none' stroke='%238F959C' stroke-opacity='.5' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='14' cy='46' r='4.8' fill='%2343423A'/%3E%3Ccircle cx='13.2' cy='45.2' r='3.2' fill='%235A594D' opacity='.7'/%3E%3Ccircle cx='14' cy='46' r='4.8' fill='none' stroke='%23C9C0A8' stroke-opacity='.55' stroke-width='.8'/%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M10.6 2.5 L10.8 30 C10.9 38 12 42 13 46.5 M16.8 2.5 L16.7 30 C16.6 38 15.4 42 14.8 46.5' stroke='%23666D75' stroke-width='3.2'/%3E%3Cpath d='M10.6 2.5 L10.8 30 C10.9 38 12 42 13 46.5 M16.8 2.5 L16.7 30 C16.6 38 15.4 42 14.8 46.5' stroke='%23B9BFC5' stroke-width='2.3'/%3E%3Cpath d='M10.1 3.5 L10.3 30 C10.4 37 11.3 41 12.3 45 M16.3 3.5 L16.2 30 C16.1 37 15 41 14.4 45' stroke='%23F2F4F5' stroke-width='.9' stroke-opacity='.9'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat-x; background-size: 28px 58px;
+  filter: drop-shadow(0 2px 1.5px rgba(30, 25, 10, .3));
 }
 
 .nav { display: flex; align-items: center; justify-content: space-between; padding: 58px 0 18px; }
@@ -123,16 +144,29 @@ h1 mark { padding: 0 .04em; background: linear-gradient(transparent 56%, var(--t
 .page {
   --row: 36px; --top: 34px;
   position: relative; z-index: 1; transform: rotate(1.2deg);
-  padding: var(--top) 20px 32px 80px;
+  padding: var(--top) 20px 34px 80px;
+  font-family: var(--hand); color: var(--pen);
+}
+/* the sheet: ruled lines, margin line, a soft bend of light across it, and curled-up bottom corners */
+.page::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
   background-color: var(--sheet);
   background-image:
+    linear-gradient(98deg, rgba(255, 255, 255, .75) 0, rgba(255, 255, 255, 0) 9%, rgba(0, 0, 0, 0) 56%, rgba(70, 60, 30, .08) 73%, rgba(255, 255, 255, .45) 87%, rgba(70, 60, 30, .13) 100%),
     linear-gradient(to right, transparent 58px, #F0658F 58px, #F0658F 60px, transparent 60px),
     linear-gradient(to bottom, transparent 35px, #C5D8EE 35px);
-  background-size: 100% 100%, 100% var(--row);
-  background-position: 0 0, 0 var(--top);
-  border: 1px solid rgba(38, 52, 58, .32); border-radius: 3px;
-  box-shadow: 0 12px 24px rgba(60, 50, 30, .22), 0 2px 0 rgba(60, 50, 30, .08);
-  font-family: var(--hand); color: var(--pen);
+  background-size: 100% 100%, 100% 100%, 100% var(--row);
+  background-position: 0 0, 0 0, 0 var(--top);
+  border: 1px solid rgba(38, 52, 58, .28); border-radius: 3px 3px 46% 46% / 3px 3px 14px 14px;
+  box-shadow: 0 1px 2px rgba(60, 50, 30, .2);
+}
+/* shadow under each lifted end */
+.page::before {
+  content: ""; position: absolute; left: 2%; right: 2%; bottom: -12px; height: 38px; z-index: -2;
+  background:
+    radial-gradient(ellipse 25% 55% at 9% 40%, rgba(30, 25, 10, .55), transparent),
+    radial-gradient(ellipse 25% 55% at 91% 40%, rgba(30, 25, 10, .55), transparent);
+  filter: blur(7px);
 }
 .page .tape {
   position: absolute; top: -15px; left: 24px; width: 112px; height: 30px; transform: rotate(-4deg);
@@ -153,7 +187,6 @@ h1 mark { padding: 0 .04em; background: linear-gradient(transparent 56%, var(--t
 }
 .parsed h2 { margin: 0 0 .5rem; font: 800 .88rem/1.2 var(--ui); }
 .parsed h2.sticky { margin: -26px 0 .6rem -4px; padding: .1rem .8rem .2rem; font: 700 1.1rem/1.3 var(--hand); transform: rotate(-2.5deg); }
-.parsed h2.sticky::before { display: none; }
 .pc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .6rem; padding: .3rem 0; border-top: 1px solid rgba(38, 52, 58, .2); }
 .pc-row b { font-variant-numeric: tabular-nums; }
 
@@ -236,13 +269,9 @@ select { padding: .45rem .6rem; border: 1.5px solid var(--ink); border-radius: 6
 .prep-head p { margin: 0; max-width: 36rem; font-size: .92rem; color: var(--muted); }
 .days { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 30px 16px; }
 .day { position: relative; margin-top: 12px; padding: 0 0 10px; border: 1.5px solid var(--line); border-radius: 6px; background: #fff; box-shadow: 0 4px 10px rgba(60, 50, 30, .1); }
-.day h3 {
-  display: block; width: fit-content; max-width: calc(100% - 16px); margin: -16px 0 .5rem 12px; padding: .15rem .85rem .25rem;
-  background: var(--teal); color: var(--teal-text); font: 700 1.1rem/1.3 var(--hand); transform: rotate(-2deg);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, .1), 0 4px 8px rgba(40, 60, 60, .18);
-}
-.day:nth-child(3n + 2) h3 { background: var(--yellow); transform: rotate(1.6deg); }
-.day:nth-child(3n) h3 { background: var(--mint); transform: rotate(-1deg); }
+.day h3 { max-width: calc(100% - 16px); margin: -18px 0 .6rem 12px; padding: .2rem .95rem .5rem; font-size: 1.1rem; line-height: 1.3; }
+.day:nth-child(3n + 2) h3 { --note: var(--yellow); transform: rotate(1.6deg); }
+.day:nth-child(3n) h3 { --note: var(--mint); transform: rotate(-1deg); }
 .day ul { list-style: none; margin: 0; padding: 0 16px; }
 .day li { display: flex; gap: .5rem; padding: .3rem 0; border-top: 1px solid rgba(38, 52, 58, .15); font-size: .95rem; }
 .day li:first-child { border-top: 0; }
@@ -289,15 +318,21 @@ select { padding: .45rem .6rem; border: 1.5px solid var(--ink); border-radius: 6
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
-  .spiral { height: 36px; background-size: 20px 34px; }
-  .nav { padding-top: 46px; }
+  .site { border-top-width: 9px; }
+  .spiral { top: -9px; height: 46px; background-size: 22px 46px; }
+  .nav { padding-top: 48px; }
   .nav-links a:not(.btn) { display: none; }
 
   .stage { padding: 6px 0 0; }
   .sheet-back { inset: 12px 10px 40px 2px; }
   .pin { top: -28px; right: 28px; width: 54px; height: 63px; transform-origin: 27px 53px; }
-  .page { --top: 30px; padding-left: 64px; padding-right: 12px;
-    background-image: linear-gradient(to right, transparent 46px, #F0658F 46px, #F0658F 48px, transparent 48px), linear-gradient(to bottom, transparent 35px, #C5D8EE 35px); }
+  .page { --top: 30px; padding-left: 64px; padding-right: 12px; }
+  .page::after {
+    background-image:
+      linear-gradient(98deg, rgba(255, 255, 255, .75) 0, rgba(255, 255, 255, 0) 9%, rgba(0, 0, 0, 0) 56%, rgba(70, 60, 30, .08) 73%, rgba(255, 255, 255, .45) 87%, rgba(70, 60, 30, .13) 100%),
+      linear-gradient(to right, transparent 46px, #F0658F 46px, #F0658F 48px, transparent 48px),
+      linear-gradient(to bottom, transparent 35px, #C5D8EE 35px);
+  }
   .pg-list li { font-size: 1.18rem; }
   .pg-list li::before { left: -42px; }
   .pg-list li.q::before { left: -38px; }
