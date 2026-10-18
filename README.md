@@ -74,7 +74,7 @@ flowchart LR
 1. The seller pastes WhatsApp messages (one per line) into the page, or loads the sample orders.
 2. For each message, `core.py` asks the local model for JSON only, and tells it to use `null` instead of guessing.
 3. Plain Python matches each item against `prices.csv`, converts units (for example 250 gm to 0.25 kg) and calculates the total.
-4. Rules mark an order as `Check` when something is missing or unclear (quantity, item not priced, unit mismatch, multi-day orders such as "monday se friday").
+4. Rules mark an order as `Check` when something is missing or unclear: no quantity, an item not in the price list, a unit that does not match the price, no items found, an unclear delivery day, or a date range.
 5. Orders are grouped by delivery day into a prep list, such as "make 8 kg laddoo" for tomorrow.
 6. Results are saved in a local cache so reopening the page does not re-run the model.
 
@@ -87,6 +87,8 @@ flowchart LR
 - **Editable price list.** Edit, add or delete items in the Prices tab. Saving writes to `prices.csv` and updates totals.
 - **Original message one click away.** Click any row to see the message it came from.
 - **CSV download.** Export the order sheet to open in Excel or Google Sheets.
+- **Model picker.** The page lists the models installed in your Ollama and defaults to `gemma4:e4b`.
+- **Date ranges held back.** Orders like "monday se friday" or "kal se" get a Check stamp and are kept out of totals and the prep list, instead of being counted as one day.
 - **Private by design.** Runs locally. No account, no API key, no data upload.
 
 ## Built with
