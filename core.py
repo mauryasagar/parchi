@@ -5,6 +5,7 @@ Everything else (prices, totals, checks, the prep list) is plain Python,
 so the numbers can never be made up by the model.
 """
 import csv
+import hashlib
 import json
 import math
 import os
@@ -21,6 +22,9 @@ PROMPT = """Read this WhatsApp order and return JSON only with these keys:
 customer, items, delivery_day, notes.
 items is a list of objects with: name, quantity, unit.
 If something is not in the message, use null. Do not guess.
+Quantity must be a number. Number words: ek=1, do=2, teen=3, char=4, paanch=5, aadha=0.5, dedh=1.5, dhai=2.5.
+A count of days like "5 din" goes in quantity with unit "day".
+Keep quantity and unit exactly as written. Do not convert units: "2 dozen" is quantity 2, unit dozen; "500 gm" is quantity 500, unit gm.
 
 Message: {msg}"""
 
@@ -29,6 +33,7 @@ UNITS = {
     "gm": "g", "gms": "g", "gram": "g", "grams": "g", "g": "g",
     "dozen": "dozen", "dz": "dozen",
     "piece": "piece", "pieces": "piece", "pcs": "piece", "pc": "piece",
+    "day": "day", "days": "day", "din": "day",
 }
 
 HINDI_DAYS = [
@@ -48,6 +53,8 @@ for _i, _d in enumerate(WEEKDAYS):
 _WD = "|".join(WEEKDAYS)
 RANGE_FROM = re.compile(r"\b(?:kal|aaj|parso|today|tomorrow|" + _WD + r")\s+se\b")
 RANGE_TO = re.compile(r"\b(?:" + _WD + r")\s*(?:to|-|till|until|se)\s*(?:" + _WD + r")\b")
+
+PROMPT_VERSION = hashlib.sha1(PROMPT.encode("utf-8")).hexdigest()[:8]
 
 
 # ---------------------------------------------------------------- model ----
@@ -85,7 +92,7 @@ def _load_cache():
 def parse_cached(model, msg):
     """Return (parsed, was_cached). Same message + model is never read twice."""
     cache = _load_cache()
-    key = model + "||" + msg
+    key = model + "|" + PROMPT_VERSION + "|" + msg
     if key in cache:
         return cache[key], True
     data = ask_model(model, msg)
@@ -231,6 +238,26 @@ def is_range(text):
     return bool(RANGE_FROM.search(d) or RANGE_TO.search(d))
 
 
+NUMBER_WORDS = {
+    "ek": 1, "one": 1, "do": 2, "two": 2, "teen": 3, "three": 3, "char": 4, "chaar": 4, "four": 4,
+    "paanch": 5, "panch": 5, "five": 5, "chhe": 6, "chha": 6, "six": 6, "saat": 7, "seven": 7,
+    "aath": 8, "eight": 8, "nau": 9, "nine": 9, "das": 10, "ten": 10,
+    "aadha": 0.5, "adha": 0.5, "half": 0.5, "dedh": 1.5, "dhai": 2.5, "paav": 0.25,
+}
+
+
+def qty_in_message(qty, msg):
+    """True if the quantity can be traced to the message.
+
+    Accepts a number as written, a number word with that exact value (do = 2),
+    or a gm/kg conversion of either (250 gm -> 0.25 kg).
+    Does NOT accept a dozen turned into 12 pieces, which is how a model invents 24 dozen."""
+    text = (msg or "").lower().replace(",", "")
+    found = {float(x) for x in re.findall(r"\d+(?:\.\d+)?", text)}
+    found |= {float(NUMBER_WORDS[w]) for w in re.findall(r"[a-z]+", text) if w in NUMBER_WORDS}
+    return any(abs(n - x) < 1e-9 for n in (qty, qty * 1000, qty / 1000) for x in found)
+
+
 # ----------------------------------------------------------------- slips ----
 
 def price_item(item, prices):
@@ -275,6 +302,11 @@ def price_item(item, prices):
 
 def build_slip(msg, parsed, prices, error=None):
     items = [price_item(i, prices) for i in (parsed.get("items") or []) if isinstance(i, dict)]
+    for i in items:
+        if i["qty"] is not None and not qty_in_message(i["qty"], msg):
+            i["line_total"] = None
+            i["qty"] = None
+            i["problem"] = i["problem"] or f"{i['name'] or 'an item'}: quantity not found in the message"
     customer = clean(parsed.get("customer"))
     day = clean(parsed.get("delivery_day"))
     notes = clean(parsed.get("notes"))
@@ -284,7 +316,7 @@ def build_slip(msg, parsed, prices, error=None):
         day, notes = notes, None
 
     day_key, day_label = day_bucket(day or "")
-    ranged = is_range(day or "")
+    ranged = is_range(day or "") or is_range(msg)
 
     problems = [i["problem"] for i in items if i["problem"]]
     if error:
