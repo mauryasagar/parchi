@@ -31,7 +31,7 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 ## Screenshots
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Parchi demo: reading WhatsApp orders into an order sheet" width="90%">
+  <img src="assets/demo.webp" alt="Parchi demo: reading WhatsApp orders into an order sheet" width="90%">
 </p>
 
 <table>
