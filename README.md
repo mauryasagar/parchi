@@ -147,7 +147,8 @@ parchi/
 ├── app.py            # Flask server: serves the page and the API
 ├── core.py           # Model call, price matching, totals, Check flags, prep list
 ├── static/
-│   └── index.html    # The whole UI: landing page, orders, prep list, prices
+│   ├── index.html    # Page markup and the small script that talks to the API
+│   └── style.css     # All styling: notebook theme
 ├── orders.txt        # 15 made-up sample orders (Hinglish and English)
 ├── prices.csv        # Price list (editable from the app)
 ├── parse_all.py      # CLI: run every order through E2B and E4B, save JSON
