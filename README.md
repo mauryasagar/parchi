@@ -6,12 +6,6 @@
 
 Built for home bakers, sweet shops and tiffin services. Runs fully on your own laptop with an open-weight Gemma model.
 
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Flask](https://img.shields.io/badge/backend-Flask-lightgrey)
-![Ollama](https://img.shields.io/badge/runs%20on-Ollama-black)
-![Gemma](https://img.shields.io/badge/model-Gemma%204-orange)
-
 </div>
 
 ---
