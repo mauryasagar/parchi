@@ -290,7 +290,7 @@ select { padding: .45rem .6rem; border: 1.5px solid var(--ink); border-radius: 6
 .prow .p-price { text-align: right; font-variant-numeric: tabular-nums; }
 .p-del { width: 2.4rem; height: 2.4rem; border: 1.5px solid var(--ink); border-radius: 6px; background: #fff; color: var(--ink); font: 800 1.25rem/1 var(--ui); cursor: pointer; }
 .p-del:hover { background: var(--rose); }
-.price-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin-top: 1.1rem; }
+.price-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin: 0 0 1.2rem; }
 .price-msg { font-size: .9rem; font-weight: 700; }
 .price-msg.err { color: var(--alert); }
 

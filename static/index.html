@@ -139,17 +139,18 @@
 
             <div role="tabpanel" id="panel-prices" aria-labelledby="tab-prices" hidden>
               <div class="panel-pad">
-                <div class="prep-head">
-                  <p>Your price list. Totals are worked out from these prices, and your changes are saved to prices.csv on this laptop. The starter prices are made up.</p>
-                </div>
-                <div class="phead" aria-hidden="true"><span>Item</span><span>Per</span><span>Price (Rs)</span><span></span></div>
-                <div id="price-rows"></div>
                 <div class="price-actions">
                   <button class="btn ghost small" id="price-add" type="button">Add item</button>
                   <button class="btn primary small" id="price-save" type="button">Save prices</button>
                   <span class="price-msg" id="price-msg" role="status"></span>
                 </div>
-              </div>
+
+                <div class="prep-head">
+                  <p>Your price list. Totals are worked out from these prices, and your changes are saved to prices.csv on this laptop. The starter prices are made up.</p>
+                </div>
+                <div class="phead" aria-hidden="true"><span>Item</span><span>Per</span><span>Price (Rs)</span><span></span></div>
+                <div id="price-rows"></div>
+</div>
             </div>
           </div>
         </div>
@@ -448,7 +449,7 @@
   });
   $("price-add").addEventListener("click", () => {
     const row = htmlToEl(priceRowHTML({ item: "", unit: "kg", price: "" }));
-    $("price-rows").appendChild(row);
+    $("price-rows").prepend(row);
     row.querySelector(".p-item").focus();
     setPriceMsg("Unsaved changes", "");
   });
