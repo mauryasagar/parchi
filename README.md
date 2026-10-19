@@ -12,7 +12,6 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 
 <p align="center"><img src="assets/parchi-demo.webp" alt="Parchi demo: WhatsApp orders turned into an order sheet and prep list" width="800"></p>
 
----
 
 ## Table of contents
 
@@ -30,10 +29,7 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 - [Command-line scripts](#command-line-scripts)
 - [License](#license)
 
----
 
-
----
 
 ## The problem
 
@@ -62,7 +58,7 @@ The key design choice is a clear split of work:
 
 Everything runs on the seller's laptop through Ollama. Customer names and numbers never leave the machine, there is no per-message cost, and it works offline.
 
----
+
 
 ## Screenshots
 
@@ -77,7 +73,6 @@ Everything runs on the seller's laptop through Ollama. Customer names and number
   </tr>
 </table>
 
----
 
 ## How it works
 
@@ -211,11 +206,3 @@ python compare.py      # prints E2B vs E4B side by side
 ## License
 
 Released under the [MIT License](LICENSE).
-
----
-
-<div align="center">
-
-Built for the DEV Hacktoberfest Week 2 "Side Hustle" challenge.
-
-</div>
