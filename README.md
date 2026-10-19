@@ -10,11 +10,15 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 
 ---
 
+<p align="center"><img src="assets/parchi-demo.webp" alt="Parchi demo: WhatsApp orders turned into an order sheet and prep list" width="800"></p>
+
+---
+
 ## Table of contents
 
-- [Screenshots](#screenshots)
 - [The problem](#the-problem)
 - [The solution](#the-solution)
+- [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Key features](#key-features)
 - [Built with](#built-with)
@@ -28,24 +32,9 @@ Built for home bakers, sweet shops and tiffin services. Runs fully on your own l
 
 ---
 
-## Screenshots
-
-<p align="center">
-  <img src="assets/demo.webp" alt="Parchi demo: reading WhatsApp orders into an order sheet" width="90%">
-</p>
-
-<table>
-  <tr>
-    <td align="center"><img src="assets/home.png" alt="Parchi home page"><br><sub>Home page</sub></td>
-    <td align="center"><img src="assets/orders.png" alt="Orders table with Check flags"><br><sub>Orders table with Check flags</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="assets/prep-list.png" alt="Prep list by day"><br><sub>Prep list by day</sub></td>
-    <td align="center"><img src="assets/prices.png" alt="Editable price list"><br><sub>Editable price list</sub></td>
-  </tr>
-</table>
 
 ---
+
 ## The problem
 
 A small food seller in India takes most of their orders on WhatsApp. The messages look like this:
@@ -72,6 +61,23 @@ The key design choice is a clear split of work:
 - **Unclear orders are flagged, not guessed.** A missing quantity, an item that is not in the price list, or an unclear day gets a `Check` status so the seller can look at it.
 
 Everything runs on the seller's laptop through Ollama. Customer names and numbers never leave the machine, there is no per-message cost, and it works offline.
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/home.png" alt="Parchi home page"><br><sub>Home page</sub></td>
+    <td align="center"><img src="assets/orders.png" alt="Orders table with Check flags"><br><sub>Orders table with Check flags</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/prep-list.png" alt="Prep list by day"><br><sub>Prep list by day</sub></td>
+    <td align="center"><img src="assets/prices.png" alt="Editable price list"><br><sub>Editable price list</sub></td>
+  </tr>
+</table>
+
+---
 
 ## How it works
 
